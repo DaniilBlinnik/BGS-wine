@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Вино-карточки | Флеш-тренажёр с каруселью</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(145deg, #2b2b26 0%, #1f1e1a 100%);
+            font-family: 'Segoe UI', 'Roboto', 'Georgia', 'Times New Roman', serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.25rem 0.75rem;
+        }
+
+        /* главный контейнер карусели */
+        .carousel-container {
+            width: 100%;
+            max-width: 550px;
+            margin: 0 auto;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* область карточки с эффектом 3D */
+        .card-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1800px;
+            margin: 1rem 0 1.2rem;
+        }
+
+        .flashcard {
+            background-color: transparent;
+            width: 100%;
+            max-width: 380px;
+            height: 460px;
+            perspective: 1500px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        /* на телефонах чуть меньше, но комфортно */
+        @media (max-width: 550px) {
+            .flashcard {
+                height: 420px;
+                max-width: 94vw;
+            }
+            .card-front h2 {
+                font-size: 1.4rem;
+            }
+            .info-value {
+                font-size: 1rem;
+            }
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.65s cubic-bezier(0.23, 1, 0.32, 1);
+            transform-style: preserve-3d;
+            border-radius: 32px;
+            box-shadow: 0 25px 35px -12px rgba(0, 0, 0, 0.6);
+        }
+
+        .flashcard.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        /* общие стили лиц */
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 32px;
+            padding: 1.6rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            background: #fffef7;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* лицевая сторона: название вина */
+        .card-front {
+            background: linear-gradient(135deg, #fff9ef 0%, #fff2e0 100%);
+            color: #3a2c1f;
+            border: 1px solid #edd6b0;
+            transform: rotateY(0deg);
+        }
+
+        .card-front h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+            word-break: break-word;
+            color: #752e1c;
+            border-left: 4px solid #b46b3a;
+            padding-left: 0.8rem;
+            text-align: left;
+            width: 100%;
+        }
+
+        .wine-icon {
+            font-size: 3.8rem;
+            margin: 0.2rem 0 0.5rem;
+            opacity: 0.85;
+        }
+
+        .flip-hint {
+            position: absolute;
+            bottom: 18px;
+            font-size: 0.7rem;
+            color: #b6976c;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 5px 14px;
+            border-radius: 40px;
+            font-weight: 500;
+            backdrop-filter: blur(2px);
+        }
+
+        /* обратная сторона — данные */
+        .card-back {
+            background: #2c241a;
+            background-image: radial-gradient(circle at 10% 20%, rgba(220, 180, 120, 0.12) 2%, transparent 2.5%);
+            background-size: 20px 20px;
+            color: #f5efdf;
+            transform: rotateY(180deg);
+            justify-content: space-between;
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .info-block {
+            width: 100%;
+            margin: 6px 0;
+            border-bottom: 1px solid rgba(219, 178, 102, 0.4);
+            padding-bottom: 8px;
+        }
+
+        .info-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-weight: 300;
+            color: #e7c48b;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            word-break: break-word;
+            color: #fae7b3;
+            line-height: 1.3;
+        }
+
+        .color-tag {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 12px;
+            vertical-align: middle;
+            border: 2px solid #f1e2c0;
+            box-shadow: 0 1px 4px black;
+        }
+
+        .color-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .footer-card {
+            font-size: 0.65rem;
+            text-align: center;
+            width: 100%;
+            margin-top: 8px;
+            color: #cbbf9a;
+        }
+
+        /* кнопки навигации (стрелки) */
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 0.5rem 0 1rem;
+            width: 100%;
+        }
+
+        .nav-btn {
+            background: #3d3324;
+            border: none;
+            font-size: 2.4rem;
+            width: 64px;
+            height: 64px;
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #f2e0b0;
+            background: #4a3b2a;
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(2px);
+        }
+
+        .nav-btn:active {
+            transform: scale(0.94);
+            background: #6b4f32;
+        }
+
+        @media (hover: hover) {
+            .nav-btn:hover {
+                background: #6e543c;
+                transform: scale(1.02);
+            }
+        }
+
+        /* индикатор прогресса и счётчик */
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            width: 100%;
+            max-width: 380px;
+            margin-top: 0.25rem;
+            background: #26221bb3;
+            backdrop-filter: blur(4px);
+            padding: 8px 20px;
+            border-radius: 60px;
+            font-weight: 500;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .counter-badge {
+            background: #4a3a28;
+            padding: 4px 16px;
+            border-radius: 32px;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .position-text {
+            font-size: 0.9rem;
+            color: #ecdcaa;
+        }
+
+        /* кнопка сброса / перемешивания (опционально) */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 0.6rem;
+        }
+
+        .sec-btn {
+            background: #2f2a21;
+            border: none;
+            padding: 6px 20px;
+            border-radius: 40px;
+            color: #f0e2c5;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.1s linear;
+            backdrop-filter: blur(4px);
+        }
+
+        .sec-btn:active {
+            background: #51442e;
+            transform: scale(0.96);
+        }
+
+        /* анимация перелистывания карточек (смена индекса) */
+        .card-wrapper {
+            transition: opacity 0.2s ease;
+        }
+
+        /* удобство для тапов */
+        button {
+            touch-action: manipulation;
+        }
+
+        /* для очень маленьких экранов */
+        @media (max-width: 480px) {
+            .nav-btn {
+                width: 54px;
+                height: 54px;
+                font-size: 2rem;
+            }
+            .card-front h2 {
+                font-size: 1.25rem;
+            }
+            .info-value {
+                font-size: 0.95rem;
+            }
+            .flashcard {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="carousel-container">
+    <div class="card-wrapper">
+        <div class="flashcard" id="flashcard">
+            <div class="card-inner">
+                <!-- динамическое содержимое будет вставляться JS -->
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-buttons">
+        <button class="nav-btn" id="prevBtn" aria-label="Предыдущее вино">◀</button>
+        <button class="nav-btn" id="nextBtn" aria-label="Следующее вино">▶</button>
+    </div>
+
+    <div class="progress-indicator">
+        <span class="counter-badge" id="currentIdxDisplay">1 / 28</span>
+        <span class="position-text" id="wineNameIndicator">🍇 нажми на карточку</span>
+    </div>
+    <div class="action-buttons">
+        <button class="sec-btn" id="shuffleBtn">🎲 Перемешать</button>
+        <button class="sec-btn" id="resetFlipBtn" style="background:#3f3427;">🔄 Сбросить поворот</button>
+    </div>
+    <p style="font-size: 0.7rem; margin-top: 1rem; color: #b7aa86; text-align: center;">👇 нажми на карточку — переверни 👆<br>стрелки / свайп (листай) для навигации</p>
+</div>
+
+<script>
+    // ---------- ВСЕ 28 ВИН (из исходного файла, точные данные) ----------
+    const wineCatalog = [
+        { name: "Аньядос де Оро Темпранильо", sugar: "Сухое", grape: "Темпранильо", country: "Испания", color: "Красное" },
+        { name: "Санта КаролинаКарменер", sugar: "Полусухое", grape: "Карменер", country: "Аргентина", color: "Красное" },
+        { name: "Стейквайн", sugar: "Сухое", grape: "Каберне Совиньон", country: "Чили", color: "Красное" },
+        { name: "Стрис Оф Итали Монтепульчано", sugar: "Сухое", grape: "Монтепульчано", country: "Италия", color: "Красное" },
+        { name: "Реал Форте", sugar: "Сухое", grape: "Арагонеш", country: "Португалия", color: "Красное" },
+        { name: "Сторис Оф Итали Негромаро", sugar: "Полусладкое", grape: "Негромаро", country: "Италия", color: "Красное" },
+        { name: "Кинзмараули", sugar: "Полусладкое", grape: "Саперави", country: "Грузия", color: "Красное" },
+        { name: "Марани телавури", sugar: "Полусладкое", grape: "Саперави, Каберне Совиньон", country: "Грузия", color: "Красное" },
+        { name: "Марани телавури)", sugar: "Полусухое", grape: "Саперави", country: "Грузия", color: "Красное" },
+        { name: "Аве Саперави Кверви", sugar: "Сухое", grape: "Саперави", country: "Грузия", color: "Красное" },
+        { name: "Перли Бей", sugar: "Сухое", grape: "Сенсо", country: "ЮАР", color: "Красное" },
+        { name: "Мальборо Спрингс Совиньон Блан", sugar: "Сухое", grape: "Совиньон Блан", country: "Новая Зеландия", color: "Белое" },
+        { name: "Санта Каролина Совиньон Блан", sugar: "Сухое", grape: "Совиньон Блан", country: "Чили", color: "Белое" },
+        { name: "Реал Форте", sugar: "Сухое", grape: "Аринту", country: "Португалия", color: "Белое" },
+        { name: "Сториз Оф Итали Треббьяно Шардоне", sugar: "Сухое", grape: "Треббьяно", country: "Италия", color: "Белое" },
+        { name: "Сторис Оф Итали Мальвазия", sugar: "Полусладкое", grape: "Мальвазия", country: "Италия", color: "Белое" },
+        { name: "Чело Пино Гриджо", sugar: "Полусухое", grape: "Пино гриджо", country: "Италия", color: "Белое" },
+        { name: "Аньядос Де Оро Айрен", sugar: "Сухое", grape: "Айрен", country: "Испания", color: "Белое" },
+        { name: "Перли Бей", sugar: "Сухое", grape: "Шенен Блан", country: "ЮАР", color: "Белое" },
+        { name: "Марани Телавури", sugar: "Полусладкое", grape: "Ркацетели", country: "Грузия", color: "Белое" },      // по стр 7 упоминается COAR испания
+        { name: "Марани Телавури", sugar: "Сухое", grape: "Ркацетели", country: "Грузия", color: "Белое" },            // уточнение из стр.7
+        { name: "Винья Албали Гарнача (безалкогольное)", sugar: "Безалкогольное", grape: "Гарнача", country: "Испания", color: "Безалкогольное розовое" },
+        { name: "Винья Албали Каберне Совиньон Темпранильо (безалког.)", sugar: "Безалкогольное", grape: "Каберне Совиньон", country: "Испания", color: "Безалкогольное красное" },
+        { name: "Маркиз Ди Альтилло Розе", sugar: "Сухое", grape: "Гарнача", country: "Испания", color: "Розовое" },
+        { name: "Массандра (Красный)", sugar: "Сладкое", grape: "Саперави, Каберне Совиньон", country: "Россия", color: "Красное" },
+        { name: "Массандра (Белый)", sugar: "Сладкое", grape: "Ркацетели, Шардоне, Мускат", country: "Россия", color: "Белое" },
+        { name: "Массандра (Розовый)", sugar: "Сладкое", grape: "Ркацетели, конкур, каберне совиньон", country: "Россия", color: "Розовое" },
+        { name: "Кампело адамаде Виньо Верде", sugar: "Полусухое", grape: "Трейшадура", country: "Португалия", color: "Белое" }
+    ];
+
+    // дополнительная проверка: должно быть 28
+    if (wineCatalog.length !== 28) console.warn("Количество карточек:", wineCatalog.length);
+
+    let currentIndex = 0;          // 0-based
+    let currentFlipState = false;   // состояние переворота карточки (false = лицо, true = спина)
+
+    const flashcardEl = document.getElementById('flashcard');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const currentIdxDisplay = document.getElementById('currentIdxDisplay');
+    const wineNameIndicator = document.getElementById('wineNameIndicator');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const resetFlipBtn = document.getElementById('resetFlipBtn');
+
+    // Функция для получения иконки на основе цвета/типа
+    function getWineIcon(colorType) {
+        const type = colorType.toLowerCase();
+        if (type.includes('белое') && !type.includes('красное')) return '🥂🍾';
+        if (type.includes('розовое')) return '🌸🍷';
+        if (type.includes('безалкогольное')) return '🍇🚫°';
+        if (type.includes('креплёное')) return '🍷✨';
+        return '🍷';
+    }
+
+    // Генерация обратной стороны (карточка с данными)
+    function createBackSideHTML(wine) {
+        // определение цвета для кружка
+        let colorCircleBg = '#8b2c1d';
+        if (wine.color.includes('Белое') && !wine.color.includes('Красное') && !wine.color.includes('Розовое')) colorCircleBg = '#f9e7b3';
+        else if (wine.color.includes('Розовое')) colorCircleBg = '#e7b2b0';
+        else if (wine.color.includes('безалкогольное')) colorCircleBg = '#ab8e5c';
+        else if (wine.color.includes('креплёное')) colorCircleBg = '#9c3e2c';
+        else colorCircleBg = '#a33f28';
+
+        return `
+            <div class="info-block">
+                <div class="info-label">🍇 СОРТ ВИНОГРАДА</div>
+                <div class="info-value">${escapeHtml(wine.grape)}</div>
+            </div>
+            <div class="info-block">
+                <div class="info-label">🍬 СОДЕРЖАНИЕ САХАРА</div>
+                <div class="info-value">${escapeHtml(wine.sugar)}</div>
+            </div>
+            <div class="info-block">
+                <div class="info-label">🌍 СТРАНА</div>
+                <div class="info-value">${escapeHtml(wine.country)}</div>
+            </div>
+            <div class="info-block">
+                <div class="info-label">🎨 ЦВЕТ / ТИП</div>
+                <div class="info-value">
+                    <div class="color-row">
+                        <span class="color-tag" style="background-color: ${colorCircleBg};"></span>
+                        <span>${escapeHtml(wine.color)}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-card">🍷 виноградная мудрость 🍇</div>
+        `;
+    }
+
+    // простая защита от XSS
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+
+    // отрисовать текущую карточку с учётом состояния переворота (сохраняя flip)
+    function renderCurrentCard() {
+        const wine = wineCatalog[currentIndex];
+        if (!wine) return;
+        
+        const icon = getWineIcon(wine.color);
+        const frontHTML = `
+            <div class="card-front">
+                <div class="wine-icon">${icon}</div>
+                <h2>${escapeHtml(wine.name)}</h2>
+                <div class="flip-hint">👆 нажми, чтобы узнать секреты</div>
+            </div>
+            <div class="card-back">
+                ${createBackSideHTML(wine)}
+            </div>
+        `;
+        
+        // обновляем inner контейнера card-inner
+        const innerDiv = flashcardEl.querySelector('.card-inner');
+        if (innerDiv) {
+            innerDiv.innerHTML = frontHTML;
+        } else {
+            // если вдруг потерялся, пересоздадим
+            flashcardEl.innerHTML = `<div class="card-inner">${frontHTML}</div>`;
+        }
+        
+        // важен класс переворота
+        if (currentFlipState) {
+            flashcardEl.classList.add('flipped');
+        } else {
+            flashcardEl.classList.remove('flipped');
+        }
+        
+        // обновляем индикаторы
+        currentIdxDisplay.innerText = `${currentIndex+1} / ${wineCatalog.length}`;
+        wineNameIndicator.innerText = `${wine.name.substring(0, 28)}${wine.name.length > 28 ? '…' : ''}`;
+    }
+    
+    // переключение карточки с сохранением flip false (при смене вина разворачиваем лицевой стороной)
+    function goToIndex(newIndex) {
+        if (newIndex < 0) newIndex = wineCatalog.length - 1;
+        if (newIndex >= wineCatalog.length) newIndex = 0;
+        currentIndex = newIndex;
+        // при смене вина всегда сбрасываем переворот, чтобы видеть название
+        currentFlipState = false;
+        renderCurrentCard();
+    }
+    
+    function nextCard() {
+        goToIndex(currentIndex + 1);
+    }
+    
+    function prevCard() {
+        goToIndex(currentIndex - 1);
+    }
+    
+    // обработчик переворота карточки (клик по карточке)
+    function toggleFlip(e) {
+        // предотвращаем случайные всплытия если клик по кнопкам внутри не должен триггерить флип, но т.к. карточка сама — норма
+        e.stopPropagation();
+        currentFlipState = !currentFlipState;
+        if (currentFlipState) {
+            flashcardEl.classList.add('flipped');
+        } else {
+            flashcardEl.classList.remove('flipped');
+        }
+    }
+    
+    // перемешивание массива (shuffle) и сброс на первую карточку с лицом
+    function shuffleWines() {
+        for (let i = wineCatalog.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [wineCatalog[i], wineCatalog[j]] = [wineCatalog[j], wineCatalog[i]];
+        }
+        currentIndex = 0;
+        currentFlipState = false;
+        renderCurrentCard();
+    }
+    
+    // сбросить только переворот (не меняя позицию)
+    function resetFlipOnly() {
+        if (currentFlipState) {
+            currentFlipState = false;
+            flashcardEl.classList.remove('flipped');
+        } else {
+            // если уже лицом, легкая анимация напоминания (необяз)
+            flashcardEl.style.transform = 'scale(0.99)';
+            setTimeout(() => { if(flashcardEl) flashcardEl.style.transform = ''; }, 120);
+        }
+    }
+    
+    // Добавляем поддержку свайпов для телефона (карусель)
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const cardWrapper = document.querySelector('.card-wrapper');
+    
+    function handleTouchStart(e) {
+        touchStartX = e.changedTouches[0].screenX;
+    }
+    
+    function handleTouchEnd(e) {
+        touchEndX = e.changedTouches[0].screenX;
+        const delta = touchEndX - touchStartX;
+        if (Math.abs(delta) > 55) {  // порог свайпа
+            if (delta > 0) {
+                prevCard();   // свайп вправо -> предыдущее
+            } else {
+                nextCard();   // свайп влево -> следующее
+            }
+        }
+    }
+    
+    // назначение слушателей событий
+    function bindEvents() {
+        prevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            prevCard();
+        });
+        nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            nextCard();
+        });
+        flashcardEl.addEventListener('click', toggleFlip);
+        shuffleBtn.addEventListener('click', () => {
+            shuffleWines();
+        });
+        resetFlipBtn.addEventListener('click', () => {
+            resetFlipOnly();
+        });
+        
+        // свайп по области карточки и вокруг wrapper для удобства
+        const swipeZone = document.querySelector('.carousel-container');
+        if (swipeZone) {
+            swipeZone.addEventListener('touchstart', handleTouchStart, { passive: true });
+            swipeZone.addEventListener('touchend', handleTouchEnd, { passive: false });
+        } else {
+            cardWrapper?.addEventListener('touchstart', handleTouchStart, { passive: true });
+            cardWrapper?.addEventListener('touchend', handleTouchEnd);
+        }
+        // дополнительно на сам flashcard для лучшей отзывчивости
+        flashcardEl.addEventListener('touchstart', handleTouchStart, { passive: true });
+        flashcardEl.addEventListener('touchend', handleTouchEnd);
+    }
+    
+    // инициализация первой карточки
+    function init() {
+        // убедимся, что структура есть
+        if (!flashcardEl.querySelector('.card-inner')) {
+            flashcardEl.innerHTML = '<div class="card-inner"></div>';
+        }
+        renderCurrentCard();
+        bindEvents();
+    }
+    
+    init();
+</script>
+</body>
+</html>
