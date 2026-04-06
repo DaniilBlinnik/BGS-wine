@@ -12,14 +12,10 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* фиксируем высоту ровно на весь экран, запрещаем скролл */
+        /* фиксируем высоту ровно на весь экран, запрещаем скролл, но сохраняем фон */
         html, body {
             height: 100%;
             overflow: hidden;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            left: 0;
         }
 
         body {
@@ -31,6 +27,7 @@
             align-items: center;
             padding: 0.75rem;
             overflow: hidden;
+            min-height: 100vh;
         }
 
         .carousel-container {
@@ -617,4 +614,3 @@
 </script>
 </body>
 </html>
-```
