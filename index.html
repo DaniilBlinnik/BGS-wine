@@ -43,6 +43,11 @@
       overflow-x: hidden;
     }
 
+
+    .card, .card-inner, .face, button, .btn, .arrow {
+  touch-action: manipulation;
+}
+
     .app {
       --app-max-width: 1200px;
       width: min(1200px, 100%);
@@ -266,6 +271,8 @@
       font-size: 14px;
     }
     .progress { text-align: center; margin-top: 10px; color: var(--muted); font-size: 13px; }
+
+    
 
     @media (max-width: 860px) {
       .menu-toggle { display: inline-flex; align-items: center; justify-content: center; }
