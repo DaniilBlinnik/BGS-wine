@@ -1,616 +1,529 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Вино-карточки | Вкус & ассоциации</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#2b2b26" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BG Вина" />
+  <link rel="icon" type="image/png" href="./BG-logo.png" />
+  <link rel="shortcut icon" href="./BG-logo.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <title>БГ Вина — режим заучивания</title>
+  <style>
+    :root {
+      --bg: #1f1e1a;
+      --bg-accent: #2b2b26;
+      --panel: #2c241a;
+      --panel-2: #3d3324;
+      --text: #f5efdf;
+      --muted: #cbbf9a;
+      --line: #5a4933;
+      --accent: #e7c48b;
+      --card-front-1: #fff9ef;
+      --card-front-2: #fff2e0;
+      --radius: 18px;
+      --shadow: 0 16px 44px rgba(0, 0, 0, 0.35);
+      --mobile-menu-top: 72px;
+    }
 
-        /* фиксируем высоту ровно на весь экран, запрещаем скролл, но сохраняем фон */
-        html, body {
-            height: 100%;
-            overflow: hidden;
-        }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      min-height: 100%;
+      width: 100%;
+    }
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(145deg, var(--bg-accent) 0%, var(--bg) 100%);
+      color: var(--text);
+      line-height: 1.45;
+      padding: 20px;
+      overflow-x: hidden;
+    }
 
-        body {
-            background: linear-gradient(145deg, #2b2b26 0%, #1f1e1a 100%);
-            font-family: 'Segoe UI', 'Roboto', 'Georgia', 'Times New Roman', serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 0.75rem;
-            overflow: hidden;
-            min-height: 100vh;
-        }
+    .app {
+      --app-max-width: 1200px;
+      width: min(1200px, 100%);
+      margin: 0 auto;
+    }
 
-        .carousel-container {
-            width: 100%;
-            max-width: 550px;
-            margin: 0 auto;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            max-height: 100vh;
-        }
+    .header {
+      position: sticky;
+      top: 8px;
+      z-index: 20;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(44, 36, 26, 0.9);
+      backdrop-filter: blur(8px);
+      padding: 12px 14px;
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-        .card-wrapper {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            perspective: 1800px;
-            margin: 0.5rem 0 0.8rem;
-            flex-shrink: 1;
-            min-height: 0;
-        }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid #8a6f4d;
+    }
+    .brand-title { font-size: 14px; font-weight: 700; letter-spacing: 0.03em; }
+    .brand-sub { font-size: 12px; color: var(--muted); }
 
-        .flashcard {
-            background-color: transparent;
-            width: 100%;
-            max-width: 380px;
-            height: 490px;
-            perspective: 1500px;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
+    .nav { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+    .nav a {
+      text-decoration: none;
+      color: var(--text);
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      transition: 0.2s ease;
+    }
+    .nav a:hover { background: #6e543c; }
+    .menu-toggle {
+      display: none;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--text);
+      border-radius: 10px;
+      width: 42px;
+      height: 42px;
+      font-size: 21px;
+      cursor: pointer;
+      line-height: 1;
+    }
 
-        @media (max-width: 550px) {
-            .flashcard {
-                height: 460px;
-                max-width: 94vw;
-            }
-            .card-front h2 {
-                font-size: 1.4rem;
-            }
-            .info-value {
-                font-size: 0.95rem;
-            }
-        }
+    .intro { margin: 18px 0 12px; color: var(--muted); font-size: 14px; }
 
-        @media (max-width: 480px) {
-            .flashcard {
-                height: 440px;
-            }
-        }
+    .section {
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      background: rgba(44, 36, 26, 0.95);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .section h2 { font-size: 20px; margin-bottom: 8px; }
 
-        /* для очень высоких экранов карточка не растягивается */
-        @media (min-height: 800px) {
-            .flashcard {
-                height: 500px;
-            }
-        }
+    .learn-layout {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr) 72px;
+      grid-template-areas: "prev card next";
+      gap: 12px;
+      align-items: center;
+    }
 
-        .card-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            text-align: center;
-            transition: transform 0.65s cubic-bezier(0.23, 1, 0.32, 1);
-            transform-style: preserve-3d;
-            border-radius: 32px;
-            box-shadow: 0 25px 35px -12px rgba(0, 0, 0, 0.6);
-        }
+    .arrow {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--text);
+      height: 58px;
+      border-radius: 14px;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    #prevBtn { grid-area: prev; }
+    #learnCard { grid-area: card; }
+    #nextBtn { grid-area: next; }
+    .mobile-nav-arrows {
+      display: none;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .mobile-nav-arrows .arrow {
+      flex: 1;
+      height: 50px;
+      font-size: 22px;
+    }
 
-        .flashcard.flipped .card-inner {
-            transform: rotateY(180deg);
-        }
+    .card {
+      perspective: 1600px;
+      width: 100%;
+      max-width: 560px;
+      margin: 0 auto;
+      min-height: 520px;
+    }
 
-        .card-front, .card-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            border-radius: 32px;
-            padding: 1.5rem 1.2rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-sizing: border-box;
-            background: #fffef7;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
+    .card-inner {
+      position: relative;
+      width: 100%;
+      min-height: 520px;
+      transform-style: preserve-3d;
+      transition: transform 0.62s ease;
+    }
+    .card.flipped .card-inner { transform: rotateY(180deg); }
+    .card.shuffle-anim .card-inner {
+      animation: shuffleMix 420ms ease;
+    }
+    @keyframes shuffleMix {
+      0% { transform: translateX(0) rotate(0deg) scale(1); }
+      25% { transform: translateX(-8px) rotate(-2deg) scale(0.985); }
+      50% { transform: translateX(8px) rotate(2deg) scale(0.985); }
+      100% { transform: translateX(0) rotate(0deg) scale(1); }
+    }
 
-        .card-front {
-            background: linear-gradient(135deg, #fff9ef 0%, #fff2e0 100%);
-            color: #3a2c1f;
-            border: 1px solid #edd6b0;
-            transform: rotateY(0deg);
-        }
+    .face {
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      border: 1px solid #d8bd95;
+      backface-visibility: hidden;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+    }
+    .front {
+      background: linear-gradient(135deg, var(--card-front-1) 0%, var(--card-front-2) 100%);
+      color: #3a2c1f;
+    }
+    .back {
+      transform: rotateY(180deg);
+      background: #2c241a;
+      color: #f5efdf;
+    }
 
-        .card-front h2 {
-            font-size: 1.7rem;
-            font-weight: 700;
-            margin-bottom: 0.8rem;
-            word-break: break-word;
-            color: #752e1c;
-            border-left: 4px solid #b46b3a;
-            padding-left: 0.8rem;
-            text-align: left;
-            width: 100%;
-            max-height: 180px;
-            overflow-y: auto;
-        }
+    .wine-type {
+      display: inline-flex;
+      width: fit-content;
+      font-size: 12px;
+      color: #7b5832;
+      border: 1px solid #d8bd95;
+      padding: 5px 10px;
+      border-radius: 999px;
+      margin-bottom: 16px;
+    }
+    .wine-name {
+      font-size: clamp(24px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.2;
+      min-height: calc(1.2em * 3);
+      margin-bottom: 14px;
+      overflow: hidden;
+      display: -webkit-box;
+      line-clamp: 3;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+    }
 
-        .wine-icon {
-            font-size: 3.5rem;
-            margin: 0.2rem 0 0.5rem;
-            opacity: 0.85;
-        }
+    .bottle-wrap {
+      height: 280px;
+      overflow: hidden;
+      border: 1px dashed #cba873;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.25);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .bottle-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+    }
 
-        .flip-hint {
-            position: absolute;
-            bottom: 18px;
-            font-size: 0.7rem;
-            color: #b6976c;
-            background: rgba(0, 0, 0, 0.05);
-            padding: 5px 14px;
-            border-radius: 40px;
-            font-weight: 500;
-            backdrop-filter: blur(2px);
-        }
+    .hint { color: var(--muted); font-size: 13px; text-align: center; }
+    .front .hint { color: #8a6b45; }
+    .list { display: grid; gap: 10px; margin-top: 8px; }
+    .row { border-bottom: 1px solid #5a4933; padding-bottom: 8px; }
+    .label { font-size: 11px; color: #e7c48b; text-transform: uppercase; letter-spacing: 0.07em; }
+    .value { font-size: 17px; margin-top: 2px; }
 
-        .card-back {
-            background: #2c241a;
-            background-image: radial-gradient(circle at 10% 20%, rgba(220, 180, 120, 0.12) 2%, transparent 2.5%);
-            background-size: 20px 20px;
-            color: #f5efdf;
-            transform: rotateY(180deg);
-            justify-content: space-between;
-            align-items: flex-start;
-            text-align: left;
-            overflow-y: auto;
-        }
+    .metrics { display: grid; gap: 8px; margin-top: 8px; }
+    .metric { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+    .battery { display: inline-flex; gap: 4px; }
+    .cell {
+      width: 18px;
+      height: 10px;
+      border-radius: 3px;
+      border: 1px solid #b99663;
+      background: transparent;
+    }
+    .cell.on { background: #e7c48b; border-color: #e7c48b; }
 
-        .info-block {
-            width: 100%;
-            margin: 4px 0;
-            border-bottom: 1px solid rgba(219, 178, 102, 0.35);
-            padding-bottom: 6px;
-        }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 12px;
+    }
+    .btn {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--text);
+      border-radius: 11px;
+      padding: 9px 14px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .progress { text-align: center; margin-top: 10px; color: var(--muted); font-size: 13px; }
 
-        .info-label {
-            font-size: 0.68rem;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            font-weight: 300;
-            color: #e7c48b;
-            margin-bottom: 4px;
-        }
-
-        .info-value {
-            font-size: 1rem;
-            font-weight: 600;
-            word-break: break-word;
-            color: #fae7b3;
-            line-height: 1.3;
-        }
-
-        .taste-association {
-            background: rgba(0,0,0,0.3);
-            border-radius: 20px;
-            padding: 5px 8px;
-            margin-top: 2px;
-            display: inline-block;
-            width: auto;
-        }
-
-        .color-tag {
-            display: inline-block;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            margin-right: 10px;
-            vertical-align: middle;
-            border: 2px solid #f1e2c0;
-            box-shadow: 0 1px 4px black;
-        }
-
-        .color-row {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .footer-card {
-            font-size: 0.6rem;
-            text-align: center;
-            width: 100%;
-            margin-top: 8px;
-            color: #cbbf9a;
-        }
-
-        /* кнопки навигации (стрелки) */
-        .nav-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin: 0.3rem 0 0.5rem;
-            width: 100%;
-            flex-shrink: 0;
-        }
-
-        .nav-btn {
-            background: #3d3324;
-            border: none;
-            font-size: 2.4rem;
-            width: 64px;
-            height: 64px;
-            border-radius: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            color: #f2e0b0;
-            background: #4a3b2a;
-            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(2px);
-        }
-
-        .nav-btn:active {
-            transform: scale(0.94);
-            background: #6b4f32;
-        }
-
-        @media (hover: hover) {
-            .nav-btn:hover {
-                background: #6e543c;
-                transform: scale(1.02);
-            }
-        }
-
-        /* индикатор прогресса и счётчик — фиксированная ширина, чтобы не двигался */
-        .progress-indicator {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 380px;
-            margin: 0.2rem auto 0;
-            background: #26221bb3;
-            backdrop-filter: blur(4px);
-            padding: 8px 20px;
-            border-radius: 60px;
-            font-weight: 500;
-            gap: 16px;
-            flex-shrink: 0;
-            min-width: 260px;
-        }
-
-        .counter-badge {
-            background: #4a3a28;
-            padding: 4px 16px;
-            border-radius: 32px;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .position-text {
-            font-size: 0.85rem;
-            color: #ecdcaa;
-            text-align: right;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            flex: 1;
-            min-width: 0;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin-top: 0.5rem;
-            flex-shrink: 0;
-        }
-
-        .sec-btn {
-            background: #2f2a21;
-            border: none;
-            padding: 6px 20px;
-            border-radius: 40px;
-            color: #f0e2c5;
-            font-size: 0.8rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: 0.1s linear;
-            backdrop-filter: blur(4px);
-        }
-
-        .sec-btn:active {
-            background: #51442e;
-            transform: scale(0.96);
-        }
-
-        button {
-            touch-action: manipulation;
-        }
-
-        /* мелкие экраны: уменьшаем отступы и чуть поджимаем */
-        @media (max-width: 480px) {
-            .nav-btn {
-                width: 54px;
-                height: 54px;
-                font-size: 2rem;
-            }
-            .card-front h2 {
-                font-size: 1.25rem;
-            }
-            .progress-indicator {
-                padding: 6px 16px;
-            }
-            .counter-badge {
-                font-size: 0.75rem;
-                padding: 3px 12px;
-            }
-            .position-text {
-                font-size: 0.75rem;
-            }
-        }
-
-        /* убираем скролл у body, все элементы внутри flex */
-        .carousel-container {
-            overflow: hidden;
-        }
-
-        /* чтобы длинные названия не ломали верстку на лицевой стороне */
-        .card-front h2 {
-            overflow-y: auto;
-            scrollbar-width: thin;
-        }
-    </style>
+    @media (max-width: 860px) {
+      .menu-toggle { display: inline-flex; align-items: center; justify-content: center; }
+      .nav {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        max-height: min(420px, calc(100vh - 120px));
+        overflow-y: auto;
+        padding: 14px 16px 18px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: rgba(44, 36, 26, 0.98);
+        box-shadow: var(--shadow);
+        gap: 10px;
+        display: flex;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+      }
+      .header.menu-open .nav {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0) scale(1);
+      }
+      .nav a {
+        text-align: center;
+        border-radius: 12px;
+        font-size: 15px;
+        padding: 12px 14px;
+      }
+      .learn-layout { grid-template-columns: 1fr; grid-template-areas: "card"; }
+      .arrow { height: 52px; }
+      .card, .card-inner { min-height: 490px; }
+      .learn-layout > .arrow { display: none; }
+      .mobile-nav-arrows { display: flex; }
+    }
+    @media (max-width: 540px) {
+      body { padding: 12px; }
+      .section { padding: 12px; }
+      .card, .card-inner { min-height: 480px; }
+    }
+  </style>
 </head>
 <body>
-<div class="carousel-container">
-    <div class="card-wrapper">
-        <div class="flashcard" id="flashcard">
-            <div class="card-inner"></div>
+  <main class="app">
+    <header class="header">
+      <div class="brand">
+        <img class="logo" src="./BG-logo.png" alt="Логотип БГ" />
+        <div>
+          <div class="brand-title">БГ • Винный тренажер</div>
+          <div class="brand-sub"></div>
         </div>
-    </div>
+      </div>
+      <button class="menu-toggle" id="menuToggleBtn" type="button" aria-label="Открыть меню" aria-expanded="false">☰</button>
+      <nav class="nav">
+        <a href="#learn">Заучивание</a>
+        <a href="./all.html">Все карточки</a>
+        <a href="https://vk.com/bratiagrill29?z=album-27458232_310551100" target="_blank" rel="noopener noreferrer">Винная карта VK</a>
+      </nav>
+    </header>
 
-    <div class="nav-buttons">
-        <button class="nav-btn" id="prevBtn">◀</button>
-        <button class="nav-btn" id="nextBtn">▶</button>
-    </div>
+    <p class="intro"></p>
 
-    <div class="progress-indicator">
-        <span class="counter-badge" id="currentIdxDisplay">1 / 28</span>
-        <span class="position-text" id="wineNameIndicator">🍇 нажми на карточку</span>
-    </div>
-    <div class="action-buttons">
-        <button class="sec-btn" id="shuffleBtn">🎲 Перемешать</button>
-        <button class="sec-btn" id="resetFlipBtn">🔄 Сбросить поворот</button>
-    </div>
-    <p style="font-size: 0.65rem; margin-top: 0.5rem; color: #b7aa86; text-align: center; flex-shrink: 0;">👇 нажми на карточку — переверни 👆<br>стрелки / свайп для навигации</p>
-</div>
+    <section id="learn" class="section">
+      <h2>Режим заучивания</h2>
+      <div class="learn-layout">
+        <button id="prevBtn" class="arrow" aria-label="Предыдущее вино">◀</button>
+        <div id="learnCard" class="card" role="button" aria-label="Карточка вина"></div>
+        <button id="nextBtn" class="arrow" aria-label="Следующее вино">▶</button>
+      </div>
+      <div class="mobile-nav-arrows">
+        <button id="prevBtnMobile" class="arrow" aria-label="Предыдущее вино (мобильная версия)">◀</button>
+        <button id="nextBtnMobile" class="arrow" aria-label="Следующее вино (мобильная версия)">▶</button>
+      </div>
+      <div class="controls">
+        <button id="shuffleBtn" class="btn">Перемешать</button>
+        <button id="resetBtn" class="btn">Сбросить поворот</button>
+      </div>
+      <div class="progress" id="progressText">1 / 28</div>
+    </section>
+  </main>
 
-<script>
-    // ---------- 28 вин с обновлённой информацией + яркая ассоциация вкуса + уникальный смайлик ----------
-    const wineCatalog = 
-    [
-        { name: "Аньядос де Оро Темпранильо", sugar: "Сухое", grape: "Темпранильо", country: "Испания", color: "Красное", taste: "Сушёный инжир и табак", tasteEmoji: "🍂" },
-        { name: "Санта Каролина Карменер", sugar: "Полусухое", grape: "Карменер", country: "Чили", color: "Красное", taste: "Слива и кофе", tasteEmoji: "☕" },
-        { name: "Стейквайн", sugar: "Сухое", grape: "Каберне Совиньон", country: "Аргентина", color: "Красное", taste: "Тёмные ягоды, пряности и цветы", tasteEmoji: "🫐" },
-        { name: "Стрис Оф Итали Монтепульчано", sugar: "Сухое", grape: "Монтепульчано", country: "Италия", color: "Красное", taste: "Тёмные ягоды и слива", tasteEmoji: "🍒" },
-        { name: "Реал Форте", sugar: "Сухое", grape: "Арагонеш", country: "Португалия", color: "Красное", taste: "Сушёный инжир и табак", tasteEmoji: "🍂" },
-        { name: "Сторис Оф Итали Негромаро", sugar: "Полусладкое", grape: "Негромаро", country: "Италия", color: "Красное", taste: "Черешня и сушёные травы", tasteEmoji: "🍒" },
-        { name: "Кинзмараули", sugar: "Полусладкое", grape: "Саперави", country: "Грузия", color: "Красное", taste: "Гранат и вишня", tasteEmoji: "🍒" },
-        { name: "Марани телавури (Красное, п/сл)", sugar: "Полусладкое", grape: "Саперави, Каберне Совиньон", country: "Грузия", color: "Красное", taste: "Смородина, красные ягоды", tasteEmoji: "🍓" },
-        { name: "Марани телавури (Красное, п/сух)", sugar: "Полусухое", grape: "Саперави", country: "Грузия", color: "Красное", taste: "Гранат и вишня", tasteEmoji: "🍒" },
-        { name: "Аве Саперави Кверви", sugar: "Сухое", grape: "Саперави", country: "Грузия", color: "Красное", taste: "Гранат и вишня", tasteEmoji: "🍒" },
-        { name: "Перли Бей", sugar: "Сухое", grape: "Сенсо", country: "ЮАР", color: "Красное", taste: "Тёмные ягоды и лакрица", tasteEmoji: "🫐" },
-        { name: "Мальборо Спрингс Совиньон Блан", sugar: "Сухое", grape: "Совиньон Блан", country: "Новая Зеландия", color: "Белое", taste: "Крыжовник и дыня", tasteEmoji: "🍈" },
-        { name: "Санта Каролина Совиньон Блан", sugar: "Сухое", grape: "Совиньон Блан", country: "Чили", color: "Белое", taste: "Крыжовник и дыня", tasteEmoji: "🍈" },
-        { name: "Реал Форте", sugar: "Сухое", grape: "Аринту", country: "Португалия", color: "Белое", taste: "Яблоко и ананас", tasteEmoji: "🍎" },
-        { name: "Сториз Оф Итали Треббьяно Шардоне", sugar: "Сухое", grape: "Треббьяно", country: "Италия", color: "Белое", taste: "Яблоко и абрикос", tasteEmoji: "🍎" },
-        { name: "Сторис Оф Итали Мальвазия", sugar: "Полусладкое", grape: "Мальвазия", country: "Италия", color: "Белое", taste: "Цитрус и курага", tasteEmoji: "🍊" },
-        { name: "Чело Пино Гриджо", sugar: "Полусухое", grape: "Пино гриджо", country: "Италия", color: "Белое", taste: "Лимон и дыня", tasteEmoji: "🍋" },
-        { name: "Аньядос Де Оро Айрен", sugar: "Сухое", grape: "Айрен", country: "Испания", color: "Белое", taste: "Белые цветы и персик", tasteEmoji: "🌸" },
-        { name: "Перли Бей", sugar: "Сухое", grape: "Шенен Блан", country: "ЮАР", color: "Белое", taste: "Яблоко и имбирь", tasteEmoji: "🍎" },
-        { name: "Марани Телавури (Белое, п/сл)", sugar: "Полусладкое", grape: "Ркацетели", country: "Грузия", color: "Белое", taste: "Лимон и зелёный перец", tasteEmoji: "🍋" },
-        { name: "Марани Телавури(Белое, сух)", sugar: "Сухое", grape: "Ркацетели", country: "Грузия", color: "Белое", taste: "Лимон и зелёный перец", tasteEmoji: "🍋" },
-        { name: "Винья Албали Гарнача (безалкогольное)", sugar: "Безалкогольное", grape: "Гарнача", country: "Испания", color: "Безалкогольное розовое", taste: "Лакрица и слива", tasteEmoji: "🍑" },
-        { name: "Винья Албали Каберне Совиньон Темпранильо (безалкогольное)", sugar: "Безалкогольное", grape: "Каберне Совиньон", country: "Испания", color: "Безалкогольное красное", taste: "Красный перец и чёрная смородина", tasteEmoji: "🌶️" },
-        { name: "Маркиз Ди Альтилло Розе", sugar: "Сухое", grape: "Гарнача", country: "Испания", color: "Розовое", taste: "Лакрица и слива", tasteEmoji: "🍑" },
-        { name: "Массандра (Красный)", sugar: "Сладкое", grape: "Саперави, Каберне Совиньон", country: "Россия", color: "Красное", taste: "Клубника, черная смотродина, вишня, корица", tasteEmoji: "🍓" },
-        { name: "Массандра (Белый)", sugar: "Сладкое", grape: "Ркацетели, Шардоне, Мускат", country: "Россия", color: "Белое", taste: "Персик, груша, яблоко", tasteEmoji: "🍑" },
-        { name: "Массандра (Розовый)", sugar: "Сладкое", grape: "Ркацетели, конкур, каберне совиньон", country: "Россия", color: "Розовое", taste: "Клубника, малина, вишня", tasteEmoji: "🍓" },
-        { name: "Кампело адамаде Виньо Верде", sugar: "Полусухое", grape: "Трейшадура", country: "Португалия", color: "Белое", taste: "Яблоко и лимон", tasteEmoji: "🍎" }
-    ];
+  <script src="./wines.js"></script>
+  <script>
+    const wines = Array.isArray(window.WINES) ? window.WINES.slice() : [];
 
-    if (wineCatalog.length !== 28) console.warn("Карточек:", wineCatalog.length);
+    const allRequiredCount = 28;
+    if (wines.length !== allRequiredCount) {
+      console.warn("Ожидается 28 вин. Сейчас:", wines.length);
+    }
+
+    function getMetricsForWine(wine) {
+      if (Array.isArray(wine.metrics) && wine.metrics.length > 0) {
+        return wine.metrics;
+      }
+      return [{ key: "Кислотность", level: 2 }, { key: "Питкость", level: 2 }];
+    }
+
+    function metricBattery(level) {
+      return `<span class="battery">${[1, 2, 3].map((n) => `<span class="cell ${n <= level ? "on" : ""}"></span>`).join("")}</span>`;
+    }
+
+    const fallbackBottleImage =
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='900' viewBox='0 0 520 900'%3E%3Crect width='520' height='900' fill='%23f7edd9'/%3E%3Crect x='176' y='80' width='168' height='150' rx='42' fill='%23e4c79a'/%3E%3Crect x='132' y='210' width='256' height='620' rx='95' fill='%23d2ae79'/%3E%3Ctext x='50%25' y='90%25' text-anchor='middle' font-family='Arial' font-size='36' fill='%23624421'%3EADD PHOTO%3C/text%3E%3C/svg%3E";
+
+    function getWineImage(wine) {
+      return typeof wine.image === "string" && wine.image.trim() ? wine.image : fallbackBottleImage;
+    }
+
+    function getCardHTML(wine, compact = false) {
+      const metrics = getMetricsForWine(wine);
+      return `
+        <div class="card-inner">
+          <article class="face front">
+            <span class="wine-type">${wine.color}</span>
+            <h3 class="wine-name">${wine.name}</h3>
+            <div class="bottle-wrap">
+              <img class="bottle-photo" src="${getWineImage(wine)}" alt="Бутылка: ${wine.name}" loading="lazy" />
+            </div>
+            <p class="hint">Нажмите, чтобы открыть характеристики</p>
+          </article>
+
+          <article class="face back">
+            <div class="list">
+              <div class="row"><div class="label">Сорт винограда</div><div class="value">${wine.grape}</div></div>
+              <div class="row"><div class="label">Страна</div><div class="value">${wine.country}</div></div>
+              <div class="row"><div class="label">Содержание сахара</div><div class="value">${wine.sugar}</div></div>
+              <div class="row"><div class="label">Ноты вкуса</div><div class="value">${wine.notes}</div></div>
+              <div class="metrics">
+                ${metrics.map((m) => `<div class="metric"><span>${m.key}</span>${metricBattery(m.level)}</div>`).join("")}
+              </div>
+            </div>
+            <p class="hint" style="margin-top:auto;">${compact ? "Карточка из общего списка" : "Свайп/стрелки для следующего вина"}</p>
+          </article>
+        </div>
+      `;
+    }
+
     let currentIndex = 0;
-    let currentFlipState = false;
+    let learnFlipped = false;
+    const learnCard = document.getElementById("learnCard");
+    const progressText = document.getElementById("progressText");
+    const header = document.querySelector(".header");
+    const menuToggleBtn = document.getElementById("menuToggleBtn");
+    const nav = document.querySelector(".nav");
 
-    const flashcardEl = document.getElementById('flashcard');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const currentIdxDisplay = document.getElementById('currentIdxDisplay');
-    const wineNameIndicator = document.getElementById('wineNameIndicator');
-    const shuffleBtn = document.getElementById('shuffleBtn');
-    const resetFlipBtn = document.getElementById('resetFlipBtn');
-
-    function getWineIcon(colorType) {
-        const type = colorType.toLowerCase();
-        if (type.includes('белое') && !type.includes('красное') && !type.includes('розовое')) return '🥂🍾';
-        if (type.includes('розовое')) return '🌸🍷';
-        if (type.includes('безалкогольное')) return '🍇🚫';
-        if (type.includes('креплёное')) return '🍷✨';
-        return '🍷';
+    function renderLearnCard() {
+      const wine = wines[currentIndex];
+      learnCard.classList.toggle("flipped", learnFlipped);
+      learnCard.innerHTML = getCardHTML(wine, false);
+      progressText.textContent = `${currentIndex + 1} / ${wines.length} — ${wine.name}`;
     }
 
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
+    function next() {
+      currentIndex = (currentIndex + 1) % wines.length;
+      learnFlipped = false;
+      renderLearnCard();
     }
 
-    // Создаем обратную сторону с отдельной строкой "Ассоциация вкуса / аромат" + уникальный смайлик
-    function createBackSideHTML(wine) {
-        let colorCircleBg = '#8b2c1d';
-        if (wine.color.includes('Белое') && !wine.color.includes('Красное') && !wine.color.includes('Розовое')) colorCircleBg = '#f9e7b3';
-        else if (wine.color.includes('Розовое')) colorCircleBg = '#e7b2b0';
-        else if (wine.color.includes('безалкогольное')) colorCircleBg = '#ab8e5c';
-        else if (wine.color.includes('креплёное')) colorCircleBg = '#9c3e2c';
-        else colorCircleBg = '#a33f28';
-
-        return `
-            <div class="info-block">
-                <div class="info-label">🍇 СОРТ ВИНОГРАДА</div>
-                <div class="info-value">${escapeHtml(wine.grape)}</div>
-            </div>
-            <div class="info-block">
-                <div class="info-label">🌸 АССОЦИАЦИЯ ВКУСА / АРОМАТ</div>
-                <div class="info-value taste-association">${wine.tasteEmoji} ${escapeHtml(wine.taste)}</div>
-            </div>
-            <div class="info-block">
-                <div class="info-label">🍬 СОДЕРЖАНИЕ САХАРА</div>
-                <div class="info-value">${escapeHtml(wine.sugar)}</div>
-            </div>
-            <div class="info-block">
-                <div class="info-label">🌍 СТРАНА</div>
-                <div class="info-value">${escapeHtml(wine.country)}</div>
-            </div>
-            <div class="info-block">
-                <div class="info-label">🎨 ЦВЕТ / ТИП</div>
-                <div class="info-value">
-                    <div class="color-row">
-                        <span class="color-tag" style="background-color: ${colorCircleBg};"></span>
-                        <span>${escapeHtml(wine.color)}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-card">🍷 Вино - это искусство ✨</div>
-        `;
+    function prev() {
+      currentIndex = (currentIndex - 1 + wines.length) % wines.length;
+      learnFlipped = false;
+      renderLearnCard();
     }
 
-    function renderCurrentCard() {
-        const wine = wineCatalog[currentIndex];
-        if (!wine) return;
-        
-        const icon = getWineIcon(wine.color);
-        const frontHTML = `
-            <div class="card-front">
-                <div class="wine-icon">${icon}</div>
-                <h2>${escapeHtml(wine.name)}</h2>
-                <div class="flip-hint">👆 нажми, чтобы узнать информацию</div>
-            </div>
-            <div class="card-back">
-                ${createBackSideHTML(wine)}
-            </div>
-        `;
-        
-        const innerDiv = flashcardEl.querySelector('.card-inner');
-        if (innerDiv) {
-            innerDiv.innerHTML = frontHTML;
-        } else {
-            flashcardEl.innerHTML = `<div class="card-inner">${frontHTML}</div>`;
-        }
-        
-        if (currentFlipState) {
-            flashcardEl.classList.add('flipped');
-        } else {
-            flashcardEl.classList.remove('flipped');
-        }
-        
-        // Обновляем счётчик и название вина (счётчик всегда на одном месте, т.к. имеет фиксированную ширину)
-        currentIdxDisplay.innerText = `${currentIndex+1} / ${wineCatalog.length}`;
-        // Ограничиваем длину названия, чтобы индикатор не прыгал
-        let shortName = wine.name;
-        if (shortName.length > 32) shortName = shortName.substring(0, 30) + '…';
-        wineNameIndicator.innerText = shortName;
-    }
-    
-    function goToIndex(newIndex) {
-        if (newIndex < 0) newIndex = wineCatalog.length - 1;
-        if (newIndex >= wineCatalog.length) newIndex = 0;
-        currentIndex = newIndex;
-        currentFlipState = false;
-        renderCurrentCard();
-    }
-    
-    function nextCard() { goToIndex(currentIndex + 1); }
-    function prevCard() { goToIndex(currentIndex - 1); }
-    
-    function toggleFlip(e) {
-        e.stopPropagation();
-        currentFlipState = !currentFlipState;
-        if (currentFlipState) flashcardEl.classList.add('flipped');
-        else flashcardEl.classList.remove('flipped');
-    }
-    
     function shuffleWines() {
-        for (let i = wineCatalog.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [wineCatalog[i], wineCatalog[j]] = [wineCatalog[j], wineCatalog[i]];
-        }
-        currentIndex = 0;
-        currentFlipState = false;
-        renderCurrentCard();
+      for (let i = wines.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [wines[i], wines[j]] = [wines[j], wines[i]];
+      }
+      currentIndex = 0;
+      learnFlipped = false;
+      renderLearnCard();
     }
-    
-    function resetFlipOnly() {
-        if (currentFlipState) {
-            currentFlipState = false;
-            flashcardEl.classList.remove('flipped');
-        } else {
-            // легкий фидбек если карточка уже лицом
-            flashcardEl.style.transform = 'scale(0.99)';
-            setTimeout(() => { if(flashcardEl) flashcardEl.style.transform = ''; }, 120);
-        }
+
+    function animateShuffle() {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        shuffleWines();
+        return;
+      }
+      learnCard.classList.add("shuffle-anim");
+      window.setTimeout(shuffleWines, 180);
+      window.setTimeout(() => {
+        learnCard.classList.remove("shuffle-anim");
+      }, 460);
     }
-    
-    // поддержка свайпов
+
+    document.getElementById("nextBtn").addEventListener("click", next);
+    document.getElementById("prevBtn").addEventListener("click", prev);
+    document.getElementById("nextBtnMobile").addEventListener("click", next);
+    document.getElementById("prevBtnMobile").addEventListener("click", prev);
+    document.getElementById("shuffleBtn").addEventListener("click", animateShuffle);
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      learnFlipped = false;
+      renderLearnCard();
+    });
+
+    learnCard.addEventListener("click", () => {
+      learnFlipped = !learnFlipped;
+      learnCard.classList.toggle("flipped", learnFlipped);
+    });
+
+    function closeMenu() {
+      header.classList.remove("menu-open");
+      menuToggleBtn.setAttribute("aria-expanded", "false");
+    }
+
+    menuToggleBtn.addEventListener("click", () => {
+      const isOpen = header.classList.toggle("menu-open");
+      menuToggleBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!header.contains(event.target) && !nav.contains(event.target)) closeMenu();
+    });
+
+    nav.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", closeMenu);
+    });
+
     let touchStartX = 0;
-    function handleTouchStart(e) { touchStartX = e.changedTouches[0].screenX; }
-    function handleTouchEnd(e) {
-        const delta = e.changedTouches[0].screenX - touchStartX;
-        if (Math.abs(delta) > 55) delta > 0 ? prevCard() : nextCard();
+    learnCard.addEventListener("touchstart", (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    learnCard.addEventListener("touchend", (e) => {
+      const delta = e.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(delta) > 45) {
+        if (delta < 0) next();
+        if (delta > 0) prev();
+      }
+    });
+
+    function fixLearnLayout() {
+      requestAnimationFrame(() => {
+        if (!learnCard) return;
+        learnCard.style.minHeight = "";
+        learnCard.style.minHeight = `${learnCard.offsetHeight}px`;
+        learnCard.style.minHeight = "";
+        renderLearnCard();
+      });
     }
-    
-    function bindEvents() {
-        prevBtn.onclick = (e) => { e.preventDefault(); prevCard(); };
-        nextBtn.onclick = (e) => { e.preventDefault(); nextCard(); };
-        flashcardEl.onclick = toggleFlip;
-        shuffleBtn.onclick = () => shuffleWines();
-        resetFlipBtn.onclick = () => resetFlipOnly();
-        
-        const container = document.querySelector('.carousel-container');
-        if (container) {
-            container.addEventListener('touchstart', handleTouchStart, { passive: true });
-            container.addEventListener('touchend', handleTouchEnd);
-        }
-        flashcardEl.addEventListener('touchstart', handleTouchStart, { passive: true });
-        flashcardEl.addEventListener('touchend', handleTouchEnd);
-    }
-    
-    function init() {
-        if (!flashcardEl.querySelector('.card-inner')) {
-            flashcardEl.innerHTML = '<div class="card-inner"></div>';
-        }
-        renderCurrentCard();
-        bindEvents();
-    }
-    
-    init();
-</script>
+
+    window.addEventListener("load", fixLearnLayout);
+    window.addEventListener("pageshow", fixLearnLayout);
+    window.addEventListener("resize", fixLearnLayout);
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 860) closeMenu();
+    });
+
+    renderLearnCard();
+  </script>
 </body>
 </html>
