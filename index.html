@@ -531,6 +531,28 @@
     });
 
     renderLearnCard();
+
+    function preloadAllImages() {
+  const imageUrls = wines.map(wine => {
+    if (typeof wine.image === "string" && wine.image.trim()) {
+      return wine.image;
+    }
+    return null;
+  }).filter(url => url !== null);
+  
+  imageUrls.forEach(url => {
+    const img = new Image();
+    img.src = url;
+  });
+  
+  console.log(`Предзагрузка ${imageUrls.length} изображений...`);
+}
+
+// Вызвать после загрузки wines
+if (wines.length > 0) {
+  preloadAllImages();
+}
+    
   </script>
 </body>
 </html>
